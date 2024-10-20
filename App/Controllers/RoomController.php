@@ -13,8 +13,14 @@ class RoomController extends Controller
     }
 
     public function index($request){
+        $path = getUploadPath();
+
+        $roomFolder = $path . "room/";
+        $profileFolder = $path . "profile_image/";
+
         $rooms = $this->queryBuilder->table('rooms')
-            ->select(['rooms.*', 'GROUP_CONCAT(features.title) as features', 'destinations.title as destination', 'weathers.title as weather', 'IF(room_like.id IS NULL,0,1) as liked'])
+            ->select(['rooms.*', 'users.display_name as host_name', "IF(rooms.image IS NOT NULL AND TRIM(rooms.image) != '', CONCAT('$roomFolder', rooms.image), NULL) as image_path","CONCAT('$profileFolder',users.profile_image) as host_profile", 'GROUP_CONCAT(features.title) as features', 'destinations.title as destination', 'weathers.title as weather', 'IF(room_like.id IS NULL,0,1) as liked'])
+            ->join('users', 'rooms.host_id', '=', 'users.id', 'LEFT')
             ->join('room_feature', 'rooms.id', '=', 'room_feature.room_id', 'LEFT')
             ->join('features', 'features.id', '=', 'room_feature.feature_id', 'LEFT')
             ->join('destinations', 'rooms.destination_id', '=', 'destinations.id', 'LEFT')
@@ -27,8 +33,11 @@ class RoomController extends Controller
     }
 
     public function get($id, $request){
+        $path = getUploadPath();
+        $roomFolder = $path . "room/";
+
         $room = $this->queryBuilder->table('rooms')
-            ->select(['rooms.*', 'GROUP_CONCAT(features.title) as features', 'destinations.title as destination', 'weathers.title as weather', 'IF(room_like.id IS NULL,0,1) as liked'])
+            ->select(['rooms.*', "IF(rooms.image IS NOT NULL AND TRIM(rooms.image) != '', CONCAT('$roomFolder', rooms.image), NULL) as image_path", 'GROUP_CONCAT(features.title) as features', 'destinations.title as destination', 'weathers.title as weather', 'IF(room_like.id IS NULL,0,1) as liked'])
             ->join('room_feature', 'rooms.id', '=', 'room_feature.room_id', 'LEFT')
             ->join('features', 'features.id', '=', 'room_feature.feature_id', 'LEFT')
             ->join('destinations', 'rooms.destination_id', '=', 'destinations.id', 'LEFT')
@@ -50,6 +59,7 @@ class RoomController extends Controller
             'room_detail||string',
             'capacity||required|number',
             'addition_capacity||number',
+            'daily_price||required|number'
         ],$request);
 
         if($request->user_detail->role == "host") $request->host_id = $request->user_detail->id;
@@ -59,14 +69,22 @@ class RoomController extends Controller
             ->where('role', '=', 'host')->get()->execute();
         if(!$getHost) return $this->sendResponse(message: "میزبان شما پیدا نشد", error: true, status: HTTP_BadREQUEST);
 
+        // check room image
+        if($request->image){
+            $request->image = uploadBase64($request->image, 'uploads/room');
+        }
+
         $newRoom = $this->queryBuilder->table('rooms')
             ->insert([
                 'host_id' => $request->host_id,
                 'destination_id' => $request->destination_id,
                 'title' => $request->title,
                 'room_detail' => $request->room_detail,
+                'daily_price' => $request->daily_price,
+                'off_percent' => $request->off_percent ?? 0,
                 'capacity' => $request->capacity,
                 'addition_capacity' => $request->addition_capacity ?? NULL,
+                'image' => $request->image ?? NULL,
                 'created_at' => time(),
                 'updated_at' => time()
             ])->execute();

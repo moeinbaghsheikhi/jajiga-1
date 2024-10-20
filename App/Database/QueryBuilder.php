@@ -155,6 +155,7 @@ class QueryBuilder {
             }
 
             if($this->getQuery){
+//                dd($sql);
                 $statement = $this->pdo->prepare($sql);
                 $success = $statement->execute();
                 if (!$success) {

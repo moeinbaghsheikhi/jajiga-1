@@ -8,6 +8,7 @@ use App\Controllers\WeatherController;
 use App\Controllers\DestinationController;
 use App\Controllers\RoomController;
 use App\Controllers\UserController;
+use \App\Controllers\SliderController;
 
 
 // ایجاد یک نمونه از میدلور
@@ -29,6 +30,7 @@ $router->get('v1', '/weathers/{id}', WeatherController::class, 'get', "owners");
 $router->post('v1', '/weathers', WeatherController::class, 'store', "owners");
 $router->put('v1', '/weathers/{id}', WeatherController::class, 'update', "owners");
 $router->delete('v1', '/weathers/{id}', WeatherController::class, 'destroy', "owners");
+$router->post('v1', '/weathers/delete/{id}', WeatherController::class, 'destroy', "owners");
 
 // Destinations
 $router->get('v1', '/destinations', DestinationController::class, 'index', "owners");
@@ -46,12 +48,20 @@ $router->delete('v1', '/rooms/{id}', RoomController::class, 'destroy', "owners")
 $router->post('v1', '/rooms/like', RoomController::class, 'room_like');
 $router->post('v1', '/rooms/reserve', RoomController::class, 'room_reserve');
 
+// Sliders
+$router->post('v1', '/sliders', SliderController::class, 'store', access: 'owners');
+$router->get('v1', '/sliders', SliderController::class, 'index');
+
 // Users
-$router->get('v1', '/users', UserController::class, 'index',  ['admin', 'support']);
+$router->get('v1', '/users', UserController::class, 'index',  'owners');
+$router->get('v1', '/users/hosts', UserController::class, 'get_hosts',  'owners');
 $router->get('v1', '/users/{id}', UserController::class, 'get');
 $router->post('v1', '/users', UserController::class, 'store', inaccess: 'guest');
 $router->put('v1', '/users/{id}', UserController::class, 'update', inaccess: 'guest');
 $router->delete('v1', '/users/{id}', UserController::class, 'destroy', "owners");
+$router->post('v1', '/users/delete/{id}', UserController::class, 'destroy',  "owners");
+$router->post('v1', '/users/accept/{id}', UserController::class, 'confirm', "owners");
+$router->get('v1', '/host/requests', UserController::class, 'host_requests', 'owners');
 
 // features
 $router->post('v1', '/rooms/feature', RoomController::class, 'add_feature', inaccess: 'guest');

@@ -3,6 +3,9 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Dotenv\Dotenv;
 
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../..');
+$dotenv->load();
+
 if (!function_exists('dd')) {
     /**
      * Dump the passed variables and end the script.
@@ -25,11 +28,10 @@ if (!function_exists('dd')) {
 
 function getPostDataInput()
 {
-    $dotenv = Dotenv::createImmutable(__DIR__ . '/../..');
-    $dotenv->load();
     $secretKey = $_ENV['SECRET_KEY'];
 
     $jsonData = file_get_contents('php://input');
+
     $postData = (object)json_decode($jsonData, true);
 
     $request_token = getTokenFromRequest();
@@ -57,6 +59,11 @@ function getPath($version = true)
     if(!$version) $requestUri = explode('?', str_replace(['v1/', 'v2/'], '', $requestUri))[0];
 
     return $requestUri;
+}
+
+function getUploadPath(){
+    $path = $_ENV['UPLOAD_PATH'];
+    return $path;
 }
 
 function getApiVersion(){
@@ -115,7 +122,7 @@ function RandomString($length = 10)
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $randstring = '';
     for ($i = 0; $i < $length; $i++) {
-        $randstring .= $characters[rand(0, strlen($characters))];
+        $randstring .= $characters[rand(0, strlen($characters)-1)];
     }
     return $randstring;
 }

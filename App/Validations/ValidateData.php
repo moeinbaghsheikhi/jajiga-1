@@ -72,7 +72,7 @@ trait ValidateData
 
                         // check enum values
                         if(str_contains($validation, "enum")){
-                            $enums = explode(',' , trim($validation, 'enum:'));
+                            $enums = explode(',' , explode(':', $validation)[1]);
                             if(isset($request->$key)) if(!in_array($request->$key, $enums)) $isError = true && array_push($errorsMessages, " مقدار " . translate_key($key) . " معتبر نیست!");
                         }
                     }
