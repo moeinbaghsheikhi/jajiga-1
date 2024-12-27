@@ -194,7 +194,8 @@ class RoomController extends Controller
            'room_id||required|number',
            'entry_date||required|string',
            'exit_date||required|string',
-           'status||enum:pending,payed,cancel,reject'
+           'status||enum:pending,payed,cancel,reject',
+            'people_count||number',
         ], $request);
 
         // calculate entry time
@@ -213,10 +214,14 @@ class RoomController extends Controller
         $exit_timestamp = jmktime('12', '00', '00', $exit_month, $exit_day, $exit_year);
         $request->exit_timestamp = $exit_timestamp;
 
+        if($entry_timestamp > $exit_timestamp) return $this->sendResponse(error: true, status: 400, message: "تاریخ خروج نمیتواند قبل از تاریخ خروج باشد");
+
         $userDetail =  $request->user_detail;
         if($userDetail->role == "guest" || $userDetail->role == "host") {
             $request->user_id = $userDetail->id;
             $request->status  = "pending";
+        }else if($userDetail->role == "admin" && !isset($request->user_id)){
+            return $this->sendResponse(error: true, status: 400, message: "لطفا آیدی را وارد کنید");
         }
 
         $reserveRoom = $this->queryBuilder->table('reserves')
@@ -228,6 +233,7 @@ class RoomController extends Controller
                 'exit_date' => $request->exit_date,
                 'exit_timestamp' => $request->exit_timestamp,
                 'status' => $request->status ?? "pending",
+                'people_count' => $request->people_count,
                 'created_at' => time(),
                 'updated_at' => time()
             ])->execute();

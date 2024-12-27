@@ -46,7 +46,7 @@ $router->post('v1', '/rooms', RoomController::class, 'store', inaccess: 'guest')
 $router->put('v1', '/rooms/{id}', RoomController::class, 'update', inaccess: 'guest');
 $router->delete('v1', '/rooms/{id}', RoomController::class, 'destroy', "owners");
 $router->post('v1', '/rooms/like', RoomController::class, 'room_like');
-$router->post('v1', '/rooms/reserve', RoomController::class, 'room_reserve');
+$router->post('v1', '/rooms/reserve', RoomController::class, 'room_reserve', 'all');
 
 // Sliders
 $router->post('v1', '/sliders', SliderController::class, 'store', access: 'owners');

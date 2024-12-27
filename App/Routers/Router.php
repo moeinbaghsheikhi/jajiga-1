@@ -76,6 +76,7 @@ class Router {
 
             if($access){
                 if($access == "owners") $this->access->checkAccess(["support", "admin"]);
+                else if($access == "all") $this->access->checkAccess(["support", "admin", "guest"]);
                 else $this->access->checkAccess($accessRole);
             }
             elseif($inaccessRole) $this->access->checkAccess($inaccessRole, false);
